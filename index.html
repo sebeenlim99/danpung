@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>단풍 표본실</title>
+<meta name="description" content="하루에 한 잎씩, 주운 낙엽을 오리고 색에 이름을 붙이고 조각조각 이어 붙이는 가을 표본장">
+<meta name="theme-color" content="#F09A72">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:title" content="단풍 표본실">
+<meta property="og:description" content="하루에 한 잎씩 모으는 가을 표본장">
+<link rel="preload" href="/fonts/leaf-drafting.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="wrap">
+  <div class="authbar" id="authbar"></div>
+  <section class="hero">
+    <div class="topline"><span>落葉 標本 — <b id="heroNo">No.000</b></span><span id="heroDate"></span></div>
+    <figure class="frame"><canvas id="heroCv" aria-label="모은 잎으로 만든 스텐실 그림"></canvas><p class="frame-note" id="heroNote" hidden>이파리를 모아 보세요</p></figure>
+    <p class="caption" id="heroCap">가을 2026</p>
+    <p class="quote">하루에 한 잎씩 주워 와서<br>오리고, 색에 이름을 붙이고,<br>조각조각 이어 붙이는 가을 표본장</p>
+    <h1 class="bigtitle" id="bigTitle" aria-label="단풍 표본실"></h1>
+    <div class="howto"><span>하루에 한 잎</span><span>누끼 자동</span><span>네모 조각보</span><span>잎의 색이름</span></div>
+  </section>
+
+  <div class="sechead"><span class="num">01</span><h2>오늘의 한 잎</h2><span class="meta" id="todayLead"></span></div>
+  <div class="stampwrap"><section id="today" class="sheet-in" aria-live="polite"><p class="muted">표본장을 여는 중…</p></section></div>
+
+  <div class="sechead"><span class="num">02</span><h2>표본장</h2><span class="meta" id="shelfLead"></span></div>
+  <div class="shelfbar" id="shelfBar" hidden>
+    <button class="btn" data-shelf="quilt" aria-pressed="true">조각보</button>
+    <button class="btn" data-shelf="leaf" aria-pressed="false">잎 전체</button>
+    <button class="btn" data-act="saveQuilt">조각보 저장</button>
+  </div>
+  <section id="shelf"></section>
+
+  <div id="autumnWrap" hidden>
+    <div class="sechead"><span class="num">03</span><h2>올해의 가을색</h2><span class="meta">모은 순서대로</span></div>
+    <div class="strip" id="strip"></div>
+    <div class="stripmeta"><span id="stripCount"></span><span class="row"><button class="btn" id="stripCopy">HEX 복사</button><button class="btn" id="stripSave">색 팔레트 저장하기</button></span></div>
+  </div>
+
+  <footer><span id="foot"></span><span>굳이 만든 웹사이트</span></footer>
+</div>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-label="표본 보기"><div class="modal" id="modalBody"></div></div>
+<div class="dropov" id="dropov" aria-hidden="true"><b>여기 놓으면<br>오늘의 한 잎이 돼요</b></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
