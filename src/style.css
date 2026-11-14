@@ -168,3 +168,4 @@ footer{border-top:1px solid var(--ln);margin-top:90px;padding-top:10px;font-size
 .btn.kakao:hover,.btn.kakao:focus-visible{background:#F5DC00;border-color:#F5DC00;color:#000}
 .btn.google{background:#fff;border-color:#DADCE0;color:#3C4043}
 .btn.google:hover,.btn.google:focus-visible{background:#F8F9FA;border-color:#C6C9CC;color:#202124}
+.safe{font-size:12.5px;line-height:1.6;color:var(--mut);background:rgba(138,75,47,.08);border-left:2px solid var(--verm2);padding:8px 12px;margin:0 0 16px}
