@@ -278,7 +278,7 @@ function renderAuth(){
 function openLogin(){
   openModal(`<p class="bigmsg">표본을 계정에 모아두기</p>
     <p class="note" style="margin:6px 0 18px">로그인하면 어느 기기에서든 내 표본장을 볼 수 있어요. 로그인하지 않아도 쓸 수 있지만, 그땐 이 브라우저에만 저장돼요.</p>
-    <p class="safe">로그인하면 이름(닉네임), 프로필 사진, 이메일만 받아요. 비밀번호나 친구 목록, 연락처는 가져오지 않고, 표본은 나만 볼 수 있어요.</p>
+    <p class="safe">로그인 시 이름(닉네임)과 이메일만 사용해요. 표본은 나만 볼 수 있어요.</p>
     <div class="loginbtns"><button class="btn kakao" data-act="oauth" data-provider="kakao">카카오로 시작하기</button><button class="btn google" data-act="oauth" data-provider="google">구글로 시작하기</button></div>
     <div class="row" style="margin-top:16px;justify-content:flex-end"><button class="btn" data-close>나중에 할게요</button></div>`);
 }
