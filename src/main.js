@@ -280,11 +280,62 @@ function openLogin(){
     <p class="note" style="margin:6px 0 18px">로그인하면 어느 기기에서든 내 표본장을 볼 수 있어요. 로그인하지 않아도 쓸 수 있지만, 그땐 이 브라우저에만 저장돼요.</p>
     <p class="safe">로그인 시 이름(닉네임)과 이메일만 사용해요. 표본은 나만 볼 수 있어요.</p>
     <div class="loginbtns"><button class="btn kakao" data-act="oauth" data-provider="kakao">카카오로 시작하기</button><button class="btn google" data-act="oauth" data-provider="google">구글로 시작하기</button></div>
-    <div class="row" style="margin-top:16px;justify-content:flex-end"><button class="btn" data-close>나중에 할게요</button></div>`);
+    <div class="or"><span>또는 이메일로</span></div>
+    <form class="mailform" id="mailForm" novalidate>
+      <div id="mailStep1"><input class="t" type="email" id="mailIn" placeholder="이메일 주소" autocomplete="email" inputmode="email" required>
+        <button class="btn" type="submit" id="mailBtn">인증번호 받기</button></div>
+      <div id="mailStep2" hidden><p class="note" id="mailSent" style="margin:0 0 6px"></p>
+        <input class="t" id="codeIn" placeholder="메일로 받은 인증번호" autocomplete="one-time-code" inputmode="numeric" maxlength="10">
+        <div class="row" style="margin-top:10px"><button class="btn primary" type="submit" id="codeBtn">확인</button><button class="btn" type="button" data-act="mailBack">메일 다시 쓰기</button></div></div>
+      <p class="note">비밀번호 없이, 메일로 온 번호만 넣으면 돼요.</p>
+    </form>
+    <div class="row" style="margin-top:16px;justify-content:space-between;align-items:center"><a class="plink" href="/privacy.html" target="_blank" rel="noopener">개인정보처리방침</a><button class="btn" data-close>나중에 할게요</button></div>`);
+  $("#mailForm").addEventListener("submit",e=>{e.preventDefault();$("#mailStep2").hidden?mailSend():mailVerify()});
 }
 async function oauth(provider){
   const {error}=await sb.auth.signInWithOAuth({provider,options:{redirectTo:location.origin+location.pathname}});
   if(error)toast("로그인을 시작하지 못했어요. 잠시 뒤 다시 해주세요");
+}
+/* 이메일 로그인: 비밀번호 없이 인증번호(OTP) */
+let mailAddr="";
+async function mailSend(){
+  const v=($("#mailIn").value||"").trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){toast("이메일 주소를 확인해 주세요");$("#mailIn").focus();return}
+  const b=$("#mailBtn");b.disabled=true;b.textContent="보내는 중…";
+  const {error}=await sb.auth.signInWithOtp({email:v,options:{shouldCreateUser:true,emailRedirectTo:location.origin+location.pathname}});
+  b.disabled=false;b.textContent="인증번호 받기";
+  if(error){toast(/rate|limit|seconds/i.test(error.message)?"잠시 뒤에 다시 보내 주세요":"메일을 보내지 못했어요. 잠시 뒤 다시 해주세요");console.warn(error);return}
+  mailAddr=v;$("#mailStep1").hidden=true;$("#mailStep2").hidden=false;
+  $("#mailSent").textContent=`${v} 으로 인증번호를 보냈어요. 메일이 안 보이면 스팸함도 봐 주세요.`;$("#codeIn").focus();
+}
+async function mailVerify(){
+  const code=($("#codeIn").value||"").replace(/\D/g,"");
+  if(code.length<6){toast("인증번호를 다시 확인해 주세요");return}
+  const b=$("#codeBtn");b.disabled=true;
+  const {error}=await sb.auth.verifyOtp({email:mailAddr,token:code,type:"email"});
+  b.disabled=false;
+  if(error){toast(/expired/i.test(error.message)?"인증번호가 만료됐어요. 다시 받아 주세요":"인증번호가 맞지 않아요");console.warn(error);return}
+  /* 성공하면 onAuthStateChange가 표본장을 불러와요 */
+}
+/* 탈퇴: 사진 → 표본 → 계정 순서로 지움 */
+function openLeave(){
+  const n=Store.items.size;
+  openModal(`<p class="bigmsg">탈퇴하기</p>
+    <p class="note" style="margin:6px 0 14px">계정과 함께 모은 표본 ${n}장, 사진이 모두 지워져요. 지운 표본은 되돌릴 수 없어요.</p>
+    ${n?`<p class="note" style="margin:0 0 14px">남겨두고 싶으면 먼저 표본장의 <b>조각보 저장</b>이나 표본 카드를 저장해 두세요.</p>`:""}
+    <div class="row" style="justify-content:flex-end"><button class="btn" data-close>그만둘게요</button><button class="btn danger" data-act="leaveGo">모두 지우고 탈퇴</button></div>`);
+}
+async function leaveGo(){
+  const b=$("#modalBody [data-act=leaveGo]");if(b){b.disabled=true;b.textContent="지우는 중…"}
+  try{
+    const uid=Store.user.id,bucket=sb.storage.from("leaves");
+    for(;;){const {data,error}=await bucket.list(uid,{limit:1000});if(error)throw error;if(!data||!data.length)break;
+      const {error:e2}=await bucket.remove(data.map(f=>`${uid}/${f.name}`));if(e2)throw e2;if(data.length<1000)break}
+    const {error:e3}=await sb.from("leaves").delete().eq("user_id",uid);if(e3)throw e3;
+    const {error:e4}=await sb.rpc("delete_my_account");if(e4)throw e4;
+    await sb.auth.signOut({scope:"local"});
+    closeModal();toast("탈퇴했어요. 그동안 고마웠어요");
+  }catch(e){console.error(e);if(b){b.disabled=false;b.textContent="모두 지우고 탈퇴"}toast("탈퇴하지 못했어요. 잠시 뒤 다시 해주세요")}
 }
 let authBusy=false;
 sb.auth.onAuthStateChange((event,session)=>{
@@ -641,7 +692,8 @@ function renderDict(){
   const groups=[...new Set(TRAD.map(t=>t.g))];$("#dictN").textContent=TRAD.length+"색";
   $("#dict").innerHTML=groups.map(g=>`<div class="dgroup">${g}</div>`+TRAD.filter(t=>t.g===g).map(t=>`<div class="dcard"><i style="background:${t.hex}"></i><div class="tname">${gsvg(CSF,t.n,C.ink)}<span class="th">${t.h}</span></div><p>${esc(t.d)}</p><div class="hx">${t.hex}</div></div>`).join("")).join("");
 }
-function renderFoot(){$("#foot").textContent=Store.mode==="cloud"?"표본은 내 계정에 보관돼요.":Store.mode==="local"?"로그인 전에는 이 브라우저에만 보관돼요.":"이 화면에서는 표본이 저장되지 않아요."}
+function renderFoot(){$("#foot").textContent=Store.mode==="cloud"?"표본은 내 계정에 보관돼요.":Store.mode==="local"?"로그인 전에는 이 브라우저에만 보관돼요.":"이 화면에서는 표본이 저장되지 않아요.";
+  const l=$("#footLinks");if(l)l.innerHTML=`<a class="plink" href="/privacy.html">개인정보처리방침</a>${Store.user?`<button class="plink" data-act="leave">탈퇴하기</button>`:""}`}
 let heroT=null;
 function renderAll(){renderToday();renderShelf();renderFoot();renderHeroMeta();clearTimeout(heroT);heroT=setTimeout(renderHero,60)}
 
@@ -668,6 +720,9 @@ document.addEventListener("click",async e=>{
   if(t.dataset.act==="login"){openLogin();return}
   if(t.dataset.act==="oauth"){oauth(t.dataset.provider);return}
   if(t.dataset.act==="logout"){await sb.auth.signOut();toast("로그아웃했어요");return}
+  if(t.dataset.act==="leave"){openLeave();return}
+  if(t.dataset.act==="leaveGo"){leaveGo();return}
+  if(t.dataset.act==="mailBack"){$("#mailStep2").hidden=true;$("#mailStep1").hidden=false;$("#codeIn").value="";$("#mailIn").focus();return}
   const act=t.dataset.act,key=t.dataset.key,o=key?Store.items.get(key):null;
   if(act==="rot"){readForm();S.edit.rot=(S.edit.rot+1)%4;paintEdit();return}
   if(act==="shape"){readForm();const E=S.edit;E.ai=(E.ai+1)%ASPECTS.length;E.aspect=ASPECTS[E.ai];if(!applyTileScale())E.tile=autoTile(E.canvas,E.aspect);const W=E.canvas.width,H=E.canvas.height;E.tile.cx=Math.max(E.tile.hw,Math.min(W-E.tile.hw,E.tile.cx));E.tile.cy=Math.max(E.tile.hh,Math.min(H-E.tile.hh,E.tile.cy));placeBox();drawTilePrev();return}

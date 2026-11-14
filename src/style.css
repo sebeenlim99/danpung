@@ -169,3 +169,17 @@ footer{border-top:1px solid var(--ln);margin-top:90px;padding-top:10px;font-size
 .btn.google{background:#fff;border-color:#DADCE0;color:#3C4043}
 .btn.google:hover,.btn.google:focus-visible{background:#F8F9FA;border-color:#C6C9CC;color:#202124}
 .safe{font-size:12.5px;line-height:1.6;color:var(--mut);background:rgba(138,75,47,.08);border-left:2px solid var(--verm2);padding:8px 12px;margin:0 0 16px}
+
+/* 이메일 로그인 · 탈퇴 · 방침 링크 */
+.or{display:flex;align-items:center;gap:10px;margin:18px 0 6px;font-size:12.5px;color:var(--mut)}
+.or::before,.or::after{content:"";flex:1;border-top:1px solid var(--ln);opacity:.5}
+.mailform #mailStep1{display:flex;gap:8px;align-items:flex-end}
+.mailform #mailStep1 .btn{flex:none}
+.mailform #mailStep1[hidden],.mailform #mailStep2[hidden]{display:none}
+.mailform .note{margin-top:8px}
+.plink{font:inherit;font-size:12.5px;color:var(--mut);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.plink:hover,.plink:focus-visible{color:var(--acc)}
+.flinks{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+#footLinks{display:flex;gap:14px}
+.btn.danger{background:var(--verm2);border-color:var(--verm2);color:var(--cream)}
+.btn.danger:hover,.btn.danger:focus-visible{background:var(--ink);border-color:var(--ink)}
